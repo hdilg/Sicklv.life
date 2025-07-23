@@ -13,13 +13,12 @@ const mongoSanitize = require('express-mongo-sanitize');
 const path          = require('path');
 
 const app              = express();
-const PORT             = process.env.PORT || 3000;
+const PORT             = process.env.PORT || process.env.npm_package_config_port || 3000;
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET || '';
 
-// إذا كان الخادم خلف CDN أو Load Balancer
 app.set('trust proxy', 1);
 
-// إعداد Winston للتسجيل
+// Logger
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
@@ -34,63 +33,55 @@ const logger = winston.createLogger({
   ]
 });
 
-// ===== رؤوس الأمان =====
+// Security & sanitation
 app.use(helmet());
-app.use(helmet.hsts({
-  maxAge: 2 * 365 * 24 * 60 * 60,
-  includeSubDomains: true,
-  preload: true
-}));
+app.use(helmet.hsts({ maxAge: 31536000, preload: true }));
 app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
-    scriptSrc:  ["'self'", "https://www.google.com", "https://www.gstatic.com"],
-    styleSrc:   ["'self'", "'unsafe-inline'"],
-    imgSrc:     ["'self'", "data:"],
-    objectSrc:  ["'none'"],
+    scriptSrc: ["'self'", "https://www.google.com", "https://www.gstatic.com"],
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    imgSrc: ["'self'", "data:"],
+    objectSrc: ["'none'"],
     frameAncestors: ["'none'"],
-    baseUri:    ["'self'"],
+    baseUri: ["'self'"],
     formAction: ["'self'"],
     upgradeInsecureRequests: []
   }
 }));
-
-// ===== إلغاء قيود CORS تمامًا =====
 app.use(cors());
-
-// ===== حماية إضافية وميدل‌ويرات =====
 app.use(hpp());
 app.use(xssClean());
 app.use(mongoSanitize());
 app.use(express.json({ limit: '16kb' }));
 app.use(useragent.express());
 
-// ===== تحديد الحد الأعلى للطلبات =====
+// Rate limiting
 app.use(rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 دقيقة
-  max: 30,                  // 30 طلب لكل IP
+  windowMs: 15 * 60 * 1000,
+  max: 30,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: "تم تقييد طلبك مؤقتاً." }
 }));
 
-// ===== تسجيل حركة كل طلب =====
+// Log every request
 app.use((req, res, next) => {
   logger.info(`[IP: ${req.ip}] [UA: ${req.useragent.source}] ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// ===== تقديم ملفات الواجهة الثابتة =====
+// Serve static UI
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ===== دالة لحساب عدد الأيام =====
+// Helper: حساب عدد الأيام
 function calcDays(start, end) {
   const s = new Date(start), e = new Date(end);
   if (isNaN(s) || isNaN(e) || e < s) return 0;
   return Math.floor((e - s) / (1000 * 60 * 60 * 24)) + 1;
 }
 
-// ===== بيانات الإجازات الافتراضية =====
+// بيانات الإجازات
 const leavesRaw = [
   {
     serviceCode: "GSL25021372778", idNumber: "1088576044",
@@ -142,13 +133,11 @@ const leavesRaw = [
     jobTitle: "استشاري"
   }
 ];
-const leaves = leavesRaw.map(rec => ({ ...rec, days: calcDays(rec.startDate, rec.endDate) }));
+const leaves = leavesRaw.map(r => ({ ...r, days: calcDays(r.startDate, r.endDate) }));
 
-// ===== مسار استعلام الإجازة =====
+// استعلام إجازة
 app.post('/api/leave', async (req, res) => {
   const { serviceCode, idNumber, captchaToken } = req.body;
-
-  // التحقق من صحة المدخلات
   if (
     typeof serviceCode !== 'string' || !/^[A-Za-z0-9]{8,20}$/.test(serviceCode) ||
     typeof idNumber   !== 'string' || !/^[0-9]{10}$/.test(idNumber)
@@ -156,7 +145,6 @@ app.post('/api/leave', async (req, res) => {
     return res.status(400).json({ success: false, message: "البيانات غير صحيحة." });
   }
 
-  // reCAPTCHA اختياري
   if (RECAPTCHA_SECRET && captchaToken) {
     try {
       const resp = await axios.post(
@@ -174,25 +162,14 @@ app.post('/api/leave', async (req, res) => {
     }
   }
 
-  // البحث عن السجل
-  const record = leaves.find(item =>
-    item.serviceCode === serviceCode && item.idNumber === idNumber
-  );
-  if (record) {
-    return res.json({ success: true, record });
-  }
-  return res.status(404).json({ success: false, message: "لا يوجد سجل مطابق." });
+  const record = leaves.find(l => l.serviceCode === serviceCode && l.idNumber === idNumber);
+  if (record) return res.json({ success: true, record });
+  res.status(404).json({ success: false, message: "لا يوجد سجل مطابق." });
 });
 
-// ===== مسار إضافة إجازة جديدة =====
+// إضافة إجازة جديدة
 app.post('/api/add-leave', (req, res) => {
-  const {
-    serviceCode, idNumber, name,
-    reportDate, startDate, endDate,
-    doctorName, jobTitle
-  } = req.body;
-
-  // التحقق من صحة البيانات
+  const { serviceCode, idNumber, name, reportDate, startDate, endDate, doctorName, jobTitle } = req.body;
   if (
     typeof serviceCode !== 'string' || !/^[A-Za-z0-9]{8,20}$/.test(serviceCode) ||
     typeof idNumber   !== 'string' || !/^[0-9]{10}$/.test(idNumber) ||
@@ -212,26 +189,26 @@ app.post('/api/add-leave', (req, res) => {
     doctorName, jobTitle,
     days: calcDays(startDate, endDate)
   });
-  return res.json({ success: true, message: "تمت إضافة الإجازة بنجاح." });
+  res.json({ success: true, message: "تمت إضافة الإجازة بنجاح." });
 });
 
-// ===== مسار عرض جميع الإجازات =====
+// عرض جميع الإجازات
 app.get('/api/leaves', (req, res) => {
   res.json({ success: true, leaves });
 });
 
-// ===== مسار 404 لجميع المسارات الأخرى =====
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "الصفحة غير موجودة." });
 });
 
-// ===== إيقاف آمن =====
+// Graceful shutdown
 process.on('SIGTERM', () => {
   logger.info("تم إيقاف الخدمة بأمان.");
   process.exit(0);
 });
 
-// ===== بدء الاستماع =====
+// Start server
 app.listen(PORT, () => {
   logger.info(`✅ SickLV API تعمل على المنفذ ${PORT}`);
 });
