@@ -6,10 +6,6 @@
   "scripts": {
     "start": "node server.js"
   },
-  "config": {
-    "port": "3000",
-    "jwt_secret": "YOUR_SECURE_SECRET_HERE"
-  },
   "dependencies": {
     "axios": "^1.6.7",
     "cors": "^2.8.5",
