@@ -85,7 +85,7 @@ let leaves = [
   { serviceCode: "GSL25022385036", idNumber: "1088576044", name: "عبدالإله سليمان عبدالله الهديلج", reportDate: "2025-03-27", startDate: "2025-03-27", endDate: "2025-04-17", doctorName: "جمال راشد السر محمد احمد", jobTitle: "استشاري جراحة عظام" },
   { serviceCode: "GSL25022884602", idNumber: "1088576044", name: "عبدالإله سليمان عبدالله الهديلج", reportDate: "2025-04-18", startDate: "2025-04-18", endDate: "2025-05-15", doctorName: "هدى مصطفى خضر دحبور", jobTitle: "استشاري جراحة عظام" },
   { serviceCode: "GSL25023345012", idNumber: "1088576044", name: "عبدالإله سليمان عبدالله الهديلج", reportDate: "2025-05-16", startDate: "2025-05-16", endDate: "2025-06-12", doctorName: "هدى مصطفى خضر دحبور", jobTitle: "استشاري جراحة عظام" },
-  { serviceCode: "GSL25062955824", idNumber: "1088576044", name: "عبدالإله سليمان عبدالله الهديلج", reportDate: "2025-06-13", startDate: "2025-06-13", endDate: "2025-07-11", doctorName: "هدى مصطفى خضر دبحور", jobTitle: "استشاري جراحة عظام" },
+  { serviceCode: "GSL25062955824", idNumber: "1088576044", name: "عبدالإله سليمان عبدالله الهديلج", reportDate: "2025-06-13", startDate: "2025-06-13", endDate: "2025-07-11", doctorName: "هدى مصطفى خضر дبحور", jobTitle: "استشاري جراحة عظام" },
   {
     serviceCode: "GSL25071678945",
     idNumber: "1088576044",
@@ -93,7 +93,7 @@ let leaves = [
     reportDate: "2025-07-12",
     startDate: "2025-07-12",
     endDate: "2025-07-22",
-    doctorName: "عبدالعزيز فهد هميجان الروقي",
+    doctorName: "عبدالعزيز فهد هميجан الروقي",
     jobTitle: "استشاري جراحة عظام"
   }
 ].map(l => ({ ...l, days: calcDays(l.startDate, l.endDate) }));
@@ -150,62 +150,7 @@ app.post('/api/add-leave', (req, res) => {
 
   // Validate inputs
   if (
-    typeof serviceCode !== 'string' ||
-    !/^[A-Za-z0-9]{8,20}$/.test(serviceCode) ||
-    typeof idNumber   !== 'string' ||
-    !/^[0-9]{10}$/.test(idNumber) ||
-    typeof name       !== 'string' ||
-    !name.trim() ||
-    typeof reportDate !== 'string' ||
-    isNaN(Date.parse(reportDate)) ||
-    typeof startDate  !== 'string' ||
-    isNaN(Date.parse(startDate)) ||
-    typeof endDate    !== 'string' ||
-    isNaN(Date.parse(endDate)) ||
-    typeof doctorName !== 'string' ||
-    !doctorName.trim() ||
-    typeof jobTitle   !== 'string' ||
-    !jobTitle.trim()
-  ) {
-    return res.status(400).json({ success: false, message: 'مدخلات غير صحيحة.' });
-  }
-
-  const newLeave = {
-    serviceCode,
-    idNumber,
-    name,
-    reportDate,
-    startDate,
-    endDate,
-    doctorName,
-    jobTitle,
-    days: calcDays(startDate, endDate)
-  };
-  leaves.push(newLeave);
-  return res.json({
-    success: true,
-    message: 'تمت إضافة الإجازة بنجاح.',
-    record: newLeave
-  });
-});
-
-// GET /api/leaves
-app.get('/api/leaves', (req, res) => {
-  res.json({ success: true, leaves });
-});
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ success: false, message: 'الصفحة غير موجودة.' });
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('تم إيقاف الخدمة بأمان.');
-  process.exit(0);
-});
-
-// Start server
-app.listen(PORT, () => {
-  logger.info(`✅ SickLV API تعمل على المنفذ ${PORT}`);
-});
+    typeof servicioCode !== 'string' ||
+    !/^[A-Za-z0-9]{8,20}$/.test(servicioCode) ||
+    typeof idNumber !== 'string' ||
+    !/^[0-9]{10}$/.test...
