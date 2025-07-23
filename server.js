@@ -86,7 +86,16 @@ let leaves = [
   { serviceCode: "GSL25022884602", idNumber: "1088576044", name: "عبدالإله سليمان عبدالله الهديلج", reportDate: "2025-04-18", startDate: "2025-04-18", endDate: "2025-05-15", doctorName: "هدى مصطفى خضر دحبور", jobTitle: "استشاري" },
   { serviceCode: "GSL25023345012", idNumber: "1088576044", name: "عبدالإله سليمان عبدالله الهديلج", reportDate: "2025-05-16", startDate: "2025-05-16", endDate: "2025-06-12", doctorName: "هدى مصطفى خضر دحبور", jobTitle: "استشاري" },
   { serviceCode: "GSL25062955824", idNumber: "1088576044", name: "عبدالإله سليمان عبدالله الهديلج", reportDate: "2025-06-13", startDate: "2025-06-13", endDate: "2025-07-11", doctorName: "هدى مصطفى خضر دبحور", jobTitle: "استشاري" },
-  { serviceCode: "GSL25071678945", idNumber: "1088576044", name: "عبدالإله سليمان عبدالله الهديلج", reportDate: "2025-07-12", startDate: "2025-07-12", endDate: "2025-07-17", doctorName: "عبدالعزيز فهد هميجان الروقي", jobTitle: "استشاري" }
+  {
+    serviceCode: "GSL25071678945",
+    idNumber: "1088576044",
+    name: "عبدالإله سليمان عبدالله الهديلج",
+    reportDate: "2025-07-12",
+    startDate: "2025-07-12",
+    endDate: "2025-07-22",
+    doctorName: "عبدالعزيز فهد هميجان الروقي",
+    jobTitle: "استشاري"
+  }
 ].map(l => ({ ...l, days: calcDays(l.startDate, l.endDate) }));
 
 // POST /api/leave
