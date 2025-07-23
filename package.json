@@ -16,7 +16,7 @@
     "express": "^4.18.2",
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^6.8.0",
-    "express-useragent": "^1.0.16",
+    "express-useragent": "^1.0.15",
     "helmet": "^6.0.1",
     "hpp": "^0.2.3",
     "winston": "^3.8.2",
