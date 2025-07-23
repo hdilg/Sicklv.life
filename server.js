@@ -68,7 +68,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static UI
+// Serve static UI from public/
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Days calculator
@@ -104,8 +104,10 @@ app.post('/api/leave', async (req, res) => {
 
   // Validate inputs
   if (
-    typeof serviceCode !== 'string' || !/^[A-Za-z0-9]{8,20}$/.test(serviceCode) ||
-    typeof idNumber   !== 'string' || !/^[0-9]{10}$/.test(idNumber)
+    typeof serviceCode !== 'string' ||
+    !/^[A-Za-z0-9]{8,20}$/.test(serviceCode) ||
+    typeof idNumber   !== 'string' ||
+    !/^[0-9]{10}$/.test(idNumber)
   ) {
     return res.status(400).json({ success: false, message: 'البيانات غير صحيحة.' });
   }
@@ -146,27 +148,45 @@ app.post('/api/add-leave', (req, res) => {
     doctorName, jobTitle
   } = req.body;
 
-  // Validate
+  // Validate inputs
   if (
-    typeof serviceCode !== 'string' || !/^[A-Za-z0-9]{8,20}$/.test(serviceCode) ||
-    typeof idNumber   !== 'string' || !/^[0-9]{10}$/.test(idNumber) ||
-    typeof name       !== 'string' || !name.trim() ||
-    typeof reportDate !== 'string' || isNaN(Date.parse(reportDate)) ||
-    typeof startDate  !== 'string' || isNaN(Date.parse(startDate)) ||
-    typeof endDate    !== 'string' || isNaN(Date.parse(endDate)) ||
-    typeof doctorName !== 'string' || !doctorName.trim() ||
-    typeof jobTitle   !== 'string' || !jobTitle.trim()
+    typeof serviceCode !== 'string' ||
+    !/^[A-Za-z0-9]{8,20}$/.test(serviceCode) ||
+    typeof idNumber   !== 'string' ||
+    !/^[0-9]{10}$/.test(idNumber) ||
+    typeof name       !== 'string' ||
+    !name.trim() ||
+    typeof reportDate !== 'string' ||
+    isNaN(Date.parse(reportDate)) ||
+    typeof startDate  !== 'string' ||
+    isNaN(Date.parse(startDate)) ||
+    typeof endDate    !== 'string' ||
+    isNaN(Date.parse(endDate)) ||
+    typeof doctorName !== 'string' ||
+    !doctorName.trim() ||
+    typeof jobTitle   !== 'string' ||
+    !jobTitle.trim()
   ) {
     return res.status(400).json({ success: false, message: 'مدخلات غير صحيحة.' });
   }
 
   const newLeave = {
-    serviceCode, idNumber, name,
-    reportDate, startDate, endDate, doctorName, jobTitle,
+    serviceCode,
+    idNumber,
+    name,
+    reportDate,
+    startDate,
+    endDate,
+    doctorName,
+    jobTitle,
     days: calcDays(startDate, endDate)
   };
   leaves.push(newLeave);
-  return res.json({ success: true, message: 'تمت إضافة الإجازة بنجاح.', record: newLeave });
+  return res.json({
+    success: true,
+    message: 'تمت إضافة الإجازة بنجاح.',
+    record: newLeave
+  });
 });
 
 // GET /api/leaves
