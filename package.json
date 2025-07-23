@@ -1,0 +1,16 @@
+{
+  "name": "holidays-api",
+  "version": "1.0.0",
+  "description": "API لعرض الإجازات الرسمية حسب الدولة",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "date-holidays": "^3.23.3",
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
